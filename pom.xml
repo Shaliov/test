@@ -16,6 +16,7 @@
         <jstl.version>1.2</jstl.version>
         <jackson.version>2.7.2</jackson.version>
         <lombok.version>1.16.0</lombok.version>
+        <joda.version>2.9.4</joda.version>
     </properties>
 
     <dependencies>
@@ -53,9 +54,8 @@
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <version>2.9.4</version>
+            <version>${joda.version}</version>
         </dependency>
-
     </dependencies>
 
     <build>
