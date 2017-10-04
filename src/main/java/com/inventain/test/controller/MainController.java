@@ -20,6 +20,9 @@ import java.util.List;
 @RequestMapping(value = "/booking/")
 public class MainController {
 
+    private final String FORM_OF_TIME_yyyyMMdd = "yyyy-MM-dd";
+    private final String FORM_OF_TIME_HHmm = "HH:mm";
+
     @JsonView(value = Output.class)
     @RequestMapping(value = "/{message}", method = RequestMethod.GET)
     public List<Answer> getBookingCalendarInJSON(@PathVariable String message) {
@@ -32,7 +35,7 @@ public class MainController {
         for (RequestMeeting requestMeeting : requestMeetings) {
             Meeting meeting = requestMeeting.getMeeting();
             for (Answer answer : answerList) {
-                String dateAsString = meeting.getStartTime().toString(DateTimeFormat.forPattern("yyyy-MM-dd"));
+                String dateAsString = meeting.getStartTime().toString(DateTimeFormat.forPattern(FORM_OF_TIME_yyyyMMdd));
                 if (answer.getDateOfMeeting().equals(dateAsString)) {
                     if (answer.getDateOfSendingRequest().isAfter(requestMeeting.getTimeOfRequestSending())) {
                         updateAnswer(answer, requestMeeting, meeting);
@@ -43,7 +46,7 @@ public class MainController {
                 }
             }
             Answer answer = new Answer();
-            String dateAsString = meeting.getStartTime().toString(DateTimeFormat.forPattern("yyyy-MM-dd"));
+            String dateAsString = meeting.getStartTime().toString(DateTimeFormat.forPattern(FORM_OF_TIME_yyyyMMdd));
             answer.setDateOfMeeting(dateAsString);
             addAnswer(answer, requestMeeting, meeting);
             answerList.add(answer);
@@ -54,8 +57,8 @@ public class MainController {
 
     private void updateAnswer(Answer answer, RequestMeeting requestMeeting, Meeting meeting) {
         for (AnswerMeeting answerMeeting : answer.getAnswerMeetingList()) {
-            String startMeetingTimeAsString = meeting.getStartTime().toString(DateTimeFormat.forPattern("HH:mm"));
-            String endMeetingTimeAsString = meeting.getEndTime().toString(DateTimeFormat.forPattern("HH:mm"));
+            String startMeetingTimeAsString = meeting.getStartTime().toString(DateTimeFormat.forPattern(FORM_OF_TIME_HHmm));
+            String endMeetingTimeAsString = meeting.getEndTime().toString(DateTimeFormat.forPattern(FORM_OF_TIME_HHmm));
             if (answerMeeting.getStartMeetingTime().equals(startMeetingTimeAsString)) {
                 answerMeeting.setEmployerId(requestMeeting.getEmployerId());
                 answerMeeting.setStartMeetingTime(startMeetingTimeAsString);
@@ -68,9 +71,9 @@ public class MainController {
     private void addAnswer(Answer answer, RequestMeeting requestMeeting, Meeting meeting) {
         AnswerMeeting answerMeeting = new AnswerMeeting();
         answerMeeting.setEmployerId(requestMeeting.getEmployerId());
-        String startTimeAsString = meeting.getStartTime().toString(DateTimeFormat.forPattern("HH:mm"));
+        String startTimeAsString = meeting.getStartTime().toString(DateTimeFormat.forPattern(FORM_OF_TIME_HHmm));
         answerMeeting.setStartMeetingTime(startTimeAsString);
-        String endTimeAsString = meeting.getEndTime().toString(DateTimeFormat.forPattern("HH:mm"));
+        String endTimeAsString = meeting.getEndTime().toString(DateTimeFormat.forPattern(FORM_OF_TIME_HHmm));
         answerMeeting.setEndMeetingTime(endTimeAsString);
         answer.setDateOfSendingRequest(requestMeeting.getTimeOfRequestSending());
         answer.getAnswerMeetingList().add(answerMeeting);

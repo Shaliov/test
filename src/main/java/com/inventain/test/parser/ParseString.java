@@ -19,17 +19,20 @@ import java.util.regex.Pattern;
 public class ParseString {
 
     private static Logger log = Logger.getLogger(ParseString.class);
-    private Pattern patternStartEndWorkingTime = Pattern.compile("[0-2][0-9][0-5][0-9]");
-    private Pattern yearMonthDay = Pattern.compile("[0-9]{4}-[0-1][0-9]-[0-3][0-9]");
-    private Pattern time = Pattern.compile("(([0-2][0-9]:[0-5][0-9]:[0-5][0-9])|([0-2][0-9]:[0-5][0-9]))");
-    private Pattern hour = Pattern.compile("[0-9]");
+    private final Pattern PATTERN_START_WORKING_TIME = Pattern.compile("[0-2][0-9][0-5][0-9]");
+    private final Pattern PATTERN_YEAR_MONTH_DAY = Pattern.compile("[0-9]{4}-[0-1][0-9]-[0-3][0-9]");
+    private final Pattern PATTERN_TIME = Pattern.compile("(([0-2][0-9]:[0-5][0-9]:[0-5][0-9])|([0-2][0-9]:[0-5][0-9]))");
+    private final Pattern PATTERN_HOUR = Pattern.compile("[0-9]");
+    private final Pattern PATTERN_EMPLOYEE_ID = Pattern.compile("EMP[0-9]{3}");
+
+    private final String FORM_OF_TIME_HHmm = "HHmm";
 
     public Company parse(String message) {
         Company company = new Company();
         String[] temp = StringUtils.delimitedListToStringArray(message, " ");
 
 
-        if (doMatcher(patternStartEndWorkingTime, temp[0]) && doMatcher(patternStartEndWorkingTime, temp[1])) {
+        if (doMatcher(PATTERN_START_WORKING_TIME, temp[0]) && doMatcher(PATTERN_START_WORKING_TIME, temp[1])) {
             company.setStartWorkingTime(temp[0]);
             company.setEndWorkingTime(temp[1]);
         } else {
@@ -53,10 +56,9 @@ public class ParseString {
     private RequestMeeting findRequestMeeting(Integer startIndex, String[] stringArray, Company company) {
         RequestMeeting requestMeeting = new RequestMeeting();
         DateTime timeOfRequestSending;
-
-        Pattern employId = Pattern.compile("EMP[0-9]{3}");
+        
         requestMeeting.setTimeOfRequestSending(getDateTime(startIndex, stringArray));
-        if (doMatcher(employId, stringArray[startIndex + 2])) {
+        if (doMatcher(PATTERN_EMPLOYEE_ID, stringArray[startIndex + 2])) {
             requestMeeting.setEmployerId(stringArray[startIndex + 2]);
         }
 
@@ -74,11 +76,11 @@ public class ParseString {
         Meeting meeting = new Meeting();
         meeting.setStartTime(getDateTime(startIndex, stringArray));
         String s = stringArray[startIndex + 2];
-        if (doMatcher(hour, s)) {
+        if (doMatcher(PATTERN_HOUR, s)) {
             DateTime startTime = meeting.getStartTime();
             DateTime endTime = startTime.plusHours(Integer.parseInt(s));
             String endWorkingTime = company.getEndWorkingTime();
-            String endMinuteTimeOFMeeting = endTime.toString(DateTimeFormat.forPattern("HHmm"));
+            String endMinuteTimeOFMeeting = endTime.toString(DateTimeFormat.forPattern(FORM_OF_TIME_HHmm));
             if (endTime.getHourOfDay() > Integer.parseInt(endWorkingTime.substring(0,2)) ||
                     (endTime.getHourOfDay() == Integer.parseInt(endWorkingTime.substring(0,2))
                             && Integer.parseInt(endMinuteTimeOFMeeting.substring(2)) > Integer.parseInt(endWorkingTime.substring(2))) ) {
@@ -95,8 +97,8 @@ public class ParseString {
 
     private DateTime getDateTime(Integer startIndex, String[] stringArray) {
         DateTime dateTime = new DateTime();
-        if (doMatcher(yearMonthDay, stringArray[startIndex])) {
-            if (doMatcher(time, stringArray[startIndex + 1])) {
+        if (doMatcher(PATTERN_YEAR_MONTH_DAY, stringArray[startIndex])) {
+            if (doMatcher(PATTERN_TIME, stringArray[startIndex + 1])) {
                 int year = Integer.parseInt(stringArray[startIndex].substring(0, 4));
                 int month = Integer.parseInt(stringArray[startIndex].substring(5, 7));
                 int day = Integer.parseInt(stringArray[startIndex].substring(8, 10));
