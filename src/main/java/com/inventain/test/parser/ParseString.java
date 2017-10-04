@@ -15,7 +15,9 @@ import java.util.regex.Pattern;
 /**
  * @author Andrey
  */
-// Написать коменты и пояснить зачем магические числа!!!
+/**
+ * A class which allows you to parse a String
+ */
 public class ParseString {
 
     private static Logger LOG = Logger.getLogger(ParseString.class);
@@ -28,24 +30,29 @@ public class ParseString {
 
     private final String FORM_OF_TIME_HHmm = "HHmm";
 
+    /**
+     * method that starts the parsing procedure
+     * @param message - Message to be parsed
+     * @return company
+     */
     public Company parse(String message) throws NullPointerException {
         Company company = new Company();
-        String[] temp = StringUtils.delimitedListToStringArray(message, " ");
+        String[] arrayStrings = StringUtils.delimitedListToStringArray(message, " ");
 
         try {
-            setCompany(company, temp);
+            setStartAndEndWorkingHoursOfCompany(company, arrayStrings);
         } catch (NumberFormatException e) {
             LOG.error(e);
             throw new NullPointerException("it's impossible to create the \"Company\" object");
         }
 
         List<RequestMeeting> requestMeetings = company.getRequestMeetings();
-        for (int i = 2; i < temp.length; i++) {
-            if (temp[i].equals("")) {
+        for (int i = 2; i < arrayStrings.length; i++) {
+            if (arrayStrings[i].equals("")) {
                 try {
-                    RequestMeeting requestMeeting = findRequestMeeting(i + 1, temp, company);
+                    RequestMeeting requestMeeting = findRequestMeeting(i + 1, arrayStrings, company);
                     requestMeetings.add(requestMeeting);
-                } catch (NullPointerException e) {
+                } catch (NullPointerException | NumberFormatException e) {
                     LOG.error(e);
                 }
                 i += 6;
@@ -55,16 +62,32 @@ public class ParseString {
         return company;
     }
 
-    private void setCompany(Company company, String[] temp) throws NumberFormatException {
-        if (doMatcher(PATTERN_START_WORKING_TIME, temp[0]) && doMatcher(PATTERN_START_WORKING_TIME, temp[1])) {
-            company.setStartWorkingTime(temp[0]);
-            company.setEndWorkingTime(temp[1]);
+    /**
+     * sets the start and end time of working for the company
+     * @param company - company for which time is set
+     * @param arrayStrings - array of String from which time will be taken
+     * @exception NumberFormatException when the meeting time format is incorrect
+     */
+    private void setStartAndEndWorkingHoursOfCompany(Company company, String[] arrayStrings) throws NumberFormatException {
+        if (doMatcher(PATTERN_START_WORKING_TIME, arrayStrings[0]) && doMatcher(PATTERN_START_WORKING_TIME, arrayStrings[1])) {
+            company.setStartWorkingTime(arrayStrings[0]);
+            company.setEndWorkingTime(arrayStrings[1]);
         } else {
             throw new NumberFormatException("Invalid time format for working time");
         }
     }
 
-    private RequestMeeting findRequestMeeting(Integer startIndex, String[] stringArray, Company company) throws NullPointerException {
+    /**
+     * looking for the request of meeting in stringArray
+     * @param company - company for which time is set
+     * @param startIndex - indicates the starting index for stringArray
+     * @param stringArray - array of String from
+     * @param company - company for which request will find
+     * @exception NumberFormatException when the time of request sending of meeting is incorrect
+     * @exception NullPointerException when can not set the time of request sending or when something wrong with meeting
+     * @return requestMeeting
+     */
+    private RequestMeeting findRequestMeeting(Integer startIndex, String[] stringArray, Company company) throws NullPointerException, NumberFormatException {
         RequestMeeting requestMeeting = new RequestMeeting();
         DateTime timeOfRequestSending;
 
@@ -91,7 +114,15 @@ public class ParseString {
         return requestMeeting;
     }
 
-
+    /**
+     * looking for the meeting in stringArray
+     * @param startIndex - indicates the starting index for stringArray
+     * @param stringArray - array of String from
+     * @param company - company for which request will find
+     * @exception NumberFormatException when invalid time format
+     * @exception NullPointerException when can not set the time oof start time of the meeting or when the end of the meeting went beyond the working time of the company
+     * @return meeting
+     */
     private Meeting findMeeting(Integer startIndex, String[] stringArray, Company company) throws NullPointerException, NumberFormatException {
         Meeting meeting = new Meeting();
         try {
@@ -105,10 +136,10 @@ public class ParseString {
             DateTime startTime = meeting.getStartTime();
             DateTime endTime = startTime.plusHours(Integer.parseInt(s));
             String endWorkingTime = company.getEndWorkingTime();
-            String endMinuteTimeOFMeeting = endTime.toString(DateTimeFormat.forPattern(FORM_OF_TIME_HHmm));
+            String endTimeOFMeeting = endTime.toString(DateTimeFormat.forPattern(FORM_OF_TIME_HHmm));
             if (endTime.getHourOfDay() > Integer.parseInt(endWorkingTime.substring(0, 2)) ||
                     (endTime.getHourOfDay() == Integer.parseInt(endWorkingTime.substring(0, 2))
-                            && Integer.parseInt(endMinuteTimeOFMeeting.substring(2)) > Integer.parseInt(endWorkingTime.substring(2)))) {
+                            && Integer.parseInt(endTimeOFMeeting.substring(2)) > Integer.parseInt(endWorkingTime.substring(2)))) {
                 throw new NullPointerException("The end of the meeting went beyond the working time of the company");
             } else {
                 meeting.setEndTime(startTime.plusHours(Integer.parseInt(s)));
@@ -120,6 +151,13 @@ public class ParseString {
         return meeting;
     }
 
+    /**
+     * for getting time from stringArray
+     * @param startIndex - indicates the starting index for stringArray
+     * @param stringArray - array of String from
+     * @exception NumberFormatException when the time of request sending is incorrect or the date of request sending is incorrect
+     * @return dateTime
+     */
     private DateTime getDateTime(Integer startIndex, String[] stringArray) throws NumberFormatException {
         DateTime dateTime = new DateTime();
         if (doMatcher(PATTERN_YEAR_MONTH_DAY, stringArray[startIndex])) {
