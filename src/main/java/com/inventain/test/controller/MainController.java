@@ -34,7 +34,11 @@ public class MainController {
             for (Answer answer : answerList) {
                 String dateAsString = meeting.getStartTime().toString(DateTimeFormat.forPattern("yyyy-MM-dd"));
                 if (answer.getDateOfMeeting().equals(dateAsString)) {
-                    addAnswer(answer, requestMeeting, meeting);
+                    if (answer.getDateOfSendingRequest().isAfter(requestMeeting.getTimeOfRequestSending())) {
+                        updateAnswer(answer, requestMeeting, meeting);
+                    } else {
+                        addAnswer(answer, requestMeeting, meeting);
+                    }
                     continue temp;
                 }
             }
@@ -46,6 +50,19 @@ public class MainController {
 
         }
         return answerList;
+    }
+
+    private void updateAnswer(Answer answer, RequestMeeting requestMeeting, Meeting meeting) {
+        for (AnswerMeeting answerMeeting : answer.getAnswerMeetingList()) {
+            String startMeetingTimeAsString = meeting.getStartTime().toString(DateTimeFormat.forPattern("HH:mm"));
+            String endMeetingTimeAsString = meeting.getEndTime().toString(DateTimeFormat.forPattern("HH:mm"));
+            if (answerMeeting.getStartMeetingTime().equals(startMeetingTimeAsString)) {
+                answerMeeting.setEmployerId(requestMeeting.getEmployerId());
+                answerMeeting.setStartMeetingTime(startMeetingTimeAsString);
+                answerMeeting.setEndMeetingTime(endMeetingTimeAsString);
+                return;
+            }
+        }
     }
 
     private void addAnswer(Answer answer, RequestMeeting requestMeeting, Meeting meeting) {
