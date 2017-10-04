@@ -36,4 +36,26 @@ public class Answer implements Serializable {
         this.answerMeetingList = answerMeetingList;
         this.dateOfSendingRequest = dateOfSendingRequest;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Answer answer = (Answer) o;
+        if (!dateOfMeeting.equals(answer.dateOfMeeting)) return false;
+        if (answerMeetingList.size() != answer.answerMeetingList.size()) return false;
+        for (int i = 0; i < answerMeetingList.size(); i++) {
+            if (!answerMeetingList.get(i).equals(answer.getAnswerMeetingList().get(i))) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = dateOfMeeting != null ? dateOfMeeting.hashCode() : 0;
+        result = 31 * result + (answerMeetingList != null ? answerMeetingList.hashCode() : 0);
+        result = 31 * result + (dateOfSendingRequest != null ? dateOfSendingRequest.hashCode() : 0);
+        return result;
+    }
 }

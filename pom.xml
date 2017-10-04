@@ -17,6 +17,7 @@
         <jackson.version>2.7.2</jackson.version>
         <lombok.version>1.16.0</lombok.version>
         <joda.version>2.9.4</joda.version>
+        <junit.version>4.8.2</junit.version>
     </properties>
 
     <dependencies>
@@ -56,6 +57,14 @@
             <artifactId>joda-time</artifactId>
             <version>${joda.version}</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+
     </dependencies>
 
     <build>
