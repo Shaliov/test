@@ -1,5 +1,7 @@
 package com.inventain.test.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.inventain.test.interfaces.Output;
 import com.inventain.test.model.*;
 import com.inventain.test.parser.ParseString;
 import org.joda.time.format.DateTimeFormat;
@@ -18,6 +20,7 @@ import java.util.List;
 @RequestMapping(value = "/booking/")
 public class MainController {
 
+    @JsonView(value = Output.class)
     @RequestMapping(value = "/{message}", method = RequestMethod.GET)
     public List<Answer> getBookingCalendarInJSON(@PathVariable String message) {
 
@@ -25,10 +28,11 @@ public class MainController {
         Company company = parseString.parse(message);
         List<Answer> answerList = new ArrayList<>();
         List<RequestMeeting> requestMeetings = company.getRequestMeetings();
-        temp : for (RequestMeeting requestMeeting : requestMeetings) {
+        temp:
+        for (RequestMeeting requestMeeting : requestMeetings) {
             Meeting meeting = requestMeeting.getMeeting();
             for (Answer answer : answerList) {
-               String dateAsString = meeting.getStartTime().toString(DateTimeFormat.forPattern("yyyy-MM-dd"));
+                String dateAsString = meeting.getStartTime().toString(DateTimeFormat.forPattern("yyyy-MM-dd"));
                 if (answer.getDateOfMeeting().equals(dateAsString)) {
                     addAnswer(answer, requestMeeting, meeting);
                     continue temp;
@@ -44,17 +48,16 @@ public class MainController {
         return answerList;
     }
 
-    private void addAnswer(Answer answer, RequestMeeting requestMeeting, Meeting meeting){
+    private void addAnswer(Answer answer, RequestMeeting requestMeeting, Meeting meeting) {
         AnswerMeeting answerMeeting = new AnswerMeeting();
         answerMeeting.setEmployerId(requestMeeting.getEmployerId());
         String startTimeAsString = meeting.getStartTime().toString(DateTimeFormat.forPattern("HH:mm"));
         answerMeeting.setStartMeetingTime(startTimeAsString);
         String endTimeAsString = meeting.getEndTime().toString(DateTimeFormat.forPattern("HH:mm"));
         answerMeeting.setEndMeetingTime(endTimeAsString);
+        answer.setDateOfSendingRequest(requestMeeting.getTimeOfRequestSending());
         answer.getAnswerMeetingList().add(answerMeeting);
     }
-
-
 
 
 }
